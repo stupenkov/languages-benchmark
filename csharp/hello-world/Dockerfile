@@ -1,24 +1,32 @@
 # Use the official .NET SDK image as the base image
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 
 # Set the working directory inside the container
 WORKDIR /app
 
+# Install required packages for Native AOT
+RUN apk add --no-cache clang gcc musl-dev make
+
 # Copy the project file
-COPY csharp/HelloWorld/HelloWorld.csproj ./HelloWorld/
+COPY HelloWorld/HelloWorld.csproj ./HelloWorld/
 
 # Restore dependencies
 RUN dotnet restore ./HelloWorld/HelloWorld.csproj
 
 # Copy the source code
-COPY csharp/HelloWorld/. ./HelloWorld/
+COPY HelloWorld/. ./HelloWorld/
 
 # Build the application with AOT compilation
 WORKDIR /app/HelloWorld
-RUN dotnet publish -c Release -o out --self-contained true -p:PublishAot=true -p:IncludeNativeLibrariesForSelfExtract=true
+RUN dotnet publish -c Release -r linux-musl-x64 \
+    -o out --self-contained true \
+    -p:PublishAot=true \
+    -p:IncludeNativeLibrariesForSelfExtract=false \
+    -p:StripSymbols=true \
+    -p:LinkNativeDependencies=true
 
 # Create a minimal runtime image
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS runtime
+FROM alpine AS runtime
 
 # Set the working directory inside the container
 WORKDIR /app
