@@ -1,0 +1,6 @@
+@web_runtime_HostAddress = http://localhost:5073
+
+GET {{web_runtime_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

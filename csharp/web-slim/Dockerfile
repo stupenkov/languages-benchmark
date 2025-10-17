@@ -34,12 +34,12 @@ FROM alpine AS runtime
 # Set the working directory inside the container
 WORKDIR /app
 
-ENV ASPNETCORE_URLS=http://0.0.0.0:5000
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 
 # Copy the published application from the build stage
 COPY --from=build /app/WebSlim/out/appsettings.json ./
 COPY --from=build /app/WebSlim/out/WebSlim ./
-
+RUN chmod +x WebSlim
 # Set the entry point to the native executable
 ENTRYPOINT ["./WebSlim"]
